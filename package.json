@@ -1,0 +1,11 @@
+{
+  "name": "stadiumpilot",
+  "version": "1.0.0",
+  "description": "AI-assisted fan navigation and stadium operations assistant for FIFA World Cup 2026 (PromptWars Challenge 4)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/engine.test.js tests/i18n.test.js"
+  },
+  "license": "MIT"
+}
