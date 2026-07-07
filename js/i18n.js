@@ -39,6 +39,7 @@ export const STRINGS = {
     sustainabilityTipG3: "Use the carpool drop-off zone near South Concourse to cut traffic and emissions.",
     sustainabilityTipG4: "Bike racks are available at West Concourse for a zero-emission arrival.",
     sustainabilityTipG5: "Shuttle service to the overflow gate reduces walking distance and vehicle idling.",
+    organizerSummaryTemplate: "Venue-wide average density: {avg}/100 — {critical} of {total} gates at critical level.",
   },
   es: {
     title: "StadiumPilot",
@@ -78,6 +79,7 @@ export const STRINGS = {
     sustainabilityTipG3: "Use la zona de descenso para autos compartidos cerca del Concurso Sur para reducir tráfico y emisiones.",
     sustainabilityTipG4: "Hay estacionamiento para bicicletas en el Concurso Oeste para una llegada sin emisiones.",
     sustainabilityTipG5: "El servicio de lanzadera a la puerta de desbordamiento reduce la caminata y el motor en marcha.",
+    organizerSummaryTemplate: "Densidad promedio del recinto: {avg}/100 — {critical} de {total} puertas en nivel crítico.",
   },
   fr: {
     title: "StadiumPilot",
@@ -117,6 +119,7 @@ export const STRINGS = {
     sustainabilityTipG3: "Utilisez la zone de dépose covoiturage près du Concours Sud pour réduire trafic et émissions.",
     sustainabilityTipG4: "Des racks à vélos sont disponibles au Concours Ouest pour une arrivée zéro émission.",
     sustainabilityTipG5: "La navette vers la porte de délestage réduit la marche et le moteur au ralenti.",
+    organizerSummaryTemplate: "Densité moyenne du site : {avg}/100 — {critical} portes sur {total} au niveau critique.",
   },
   ar: {
     title: "StadiumPilot",
@@ -156,6 +159,7 @@ export const STRINGS = {
     sustainabilityTipG3: "استخدم منطقة تنزيل مشاركة السيارات قرب الرواق الجنوبي لتقليل الازدحام والانبعاثات.",
     sustainabilityTipG4: "تتوفر حاملات دراجات في الرواق الغربي للوصول بدون انبعاثات.",
     sustainabilityTipG5: "خدمة الحافلة المكوكية لبوابة الفائض تقلل من مسافة المشي وتشغيل المحرك دون داعٍ.",
+    organizerSummaryTemplate: "متوسط الكثافة على مستوى الملعب: {avg}/100 — {critical} من {total} بوابات في مستوى حرج.",
   },
   pt: {
     title: "StadiumPilot",
@@ -195,6 +199,7 @@ export const STRINGS = {
     sustainabilityTipG3: "Use a zona de embarque compartilhado perto do Saguão Sul para reduzir tráfego e emissões.",
     sustainabilityTipG4: "Bicicletários disponíveis no Saguão Oeste para uma chegada sem emissões.",
     sustainabilityTipG5: "O serviço de ônibus lançadeira para o portão de transbordo reduz caminhada e motor ligado à toa.",
+    organizerSummaryTemplate: "Densidade média do estádio: {avg}/100 — {critical} de {total} portões em nível crítico.",
   },
   hi: {
     title: "StadiumPilot",
@@ -234,6 +239,7 @@ export const STRINGS = {
     sustainabilityTipG3: "ट्रैफ़िक और उत्सर्जन कम करने हेतु साउथ कॉनकोर्स के पास कारपूल ड्रॉप-ऑफ ज़ोन का उपयोग करें।",
     sustainabilityTipG4: "शून्य-उत्सर्जन आगमन हेतु वेस्ट कॉनकोर्स पर साइकिल रैक उपलब्ध हैं।",
     sustainabilityTipG5: "ओवरफ़्लो गेट के लिए शटल सेवा पैदल दूरी और व्यर्थ इंजन चलने को कम करती है।",
+    organizerSummaryTemplate: "स्टेडियम-व्यापी औसत घनत्व: {avg}/100 — {total} में से {critical} गेट गंभीर स्तर पर।",
   },
 };
 

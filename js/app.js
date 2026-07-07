@@ -1,4 +1,4 @@
-import { GATES, recommendRoute, operationalAlerts, densityLabel } from "./engine.js";
+import { GATES, recommendRoute, operationalAlerts, organizerSummary, densityLabel } from "./engine.js";
 import { LANGS, t } from "./i18n.js";
 
 const state = {
@@ -79,6 +79,14 @@ function renderRouteResult(result) {
 
 function renderStaffAlerts() {
   const kickoff = Number($("#kickoffInput").value) || 0;
+  const summary = organizerSummary(kickoff);
+  const summaryEl = $("#organizerSummary");
+  summaryEl.textContent = t(state.lang, "organizerSummaryTemplate")
+    .replace("{avg}", summary.averageDensity)
+    .replace("{critical}", summary.criticalGateCount)
+    .replace("{total}", summary.totalGates);
+  summaryEl.className = `organizer-summary density-${summary.overallLabel}`;
+
   const alerts = operationalAlerts(kickoff);
   const list = $("#staffAlertList");
   list.innerHTML = "";
@@ -112,7 +120,8 @@ function handleTabKeydown(e) {
   $(next === "fan" ? "#fanTabBtn" : "#staffTabBtn").focus();
 }
 
-function handleGetRoute() {
+function handleGetRoute(e) {
+  if (e) e.preventDefault();
   const stand = $("#standSelect").value;
   const wheelchairAccess = $("#wheelchairCheck").checked;
   const minutesToKickoff = Number($("#kickoffInput").value) || 0;
@@ -133,7 +142,7 @@ function init() {
   $("#fanTabBtn").addEventListener("click", () => switchView("fan"));
   $("#staffTabBtn").addEventListener("click", () => switchView("staff"));
   $(".tabs").addEventListener("keydown", handleTabKeydown);
-  $("#getRouteBtn").addEventListener("click", handleGetRoute);
+  $("#fanForm").addEventListener("submit", handleGetRoute);
   $("#contrastToggle").addEventListener("click", toggleContrast);
   $("#kickoffInput").addEventListener("input", () => {
     if (state.view === "staff") renderStaffAlerts();

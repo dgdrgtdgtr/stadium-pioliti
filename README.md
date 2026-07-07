@@ -8,8 +8,8 @@ A GenAI-style decision-support assistant for fans, volunteers, and venue staff d
 
 Challenge 4 asks for a solution that improves **navigation, crowd management, accessibility, transportation, sustainability, multilingual assistance, and operational intelligence** at a stadium. StadiumPilot addresses all seven in a single lightweight app with two views:
 
-- **Fan Assistant** — given a fan's seating stand, accessibility needs, and time relative to kickoff, recommends the best gate to use, an accessible alternate if the primary gate is overcrowded, and an estimated walk time — with a plain-language explanation of *why*.
-- **Volunteer / Staff View** — a live ranked list of every gate's crowd density with a concrete recommended operational action (e.g. "deploy additional staff and open overflow gate"), so staff can act on the same underlying model the fans see.
+- **Fan Assistant** — given a fan's seating stand, accessibility needs, and time relative to kickoff, recommends the best gate to use, an accessible alternate if the primary gate is overcrowded, an estimated walk time, a transportation tip, and a sustainability tip — with a plain-language explanation of *why*.
+- **Volunteer / Staff / Organizer View** — a venue-wide organizer summary (average density, count of gates at critical level) sits above a live ranked list of every gate's crowd density with a concrete recommended operational action, so organizers get the 10,000-foot view and staff get the per-gate detail from the same underlying model.
 
 ## Approach & Logic
 
@@ -48,7 +48,7 @@ Vanilla HTML/CSS/JS (ES modules), zero runtime dependencies, zero build step. No
 npm test
 ```
 
-34 unit tests cover the decision engine (gate data integrity, crowd density bounds/determinism, routing logic including accessibility and fallback behavior, operational alert generation, transportation/sustainability key selection) and the i18n layer (translation completeness across all 6 supported languages including every dynamic-content key, a check that non-English languages aren't silently falling back to English text, and fallback behavior).
+38 unit tests cover the decision engine (gate data integrity, crowd density bounds/determinism, routing logic including accessibility and fallback behavior, operational alert generation, transportation/sustainability key selection, organizer summary aggregation) and the i18n layer (translation completeness across all 6 supported languages including every dynamic-content key, a check that non-English languages aren't silently falling back to English text, and fallback behavior).
 
 ## Security Notes
 
@@ -64,3 +64,5 @@ npm test
 - `aria-live="polite"` regions so route recommendations and staff alerts are announced by screen readers as they update.
 - High-contrast mode toggle for low-vision users.
 - `dir="rtl"` automatically applied for Arabic.
+- Arrow-key navigation between the two tabs with roving `tabindex`, per the WAI-ARIA tabs pattern.
+- The fan form is a real `<form>` with `<fieldset>`/`<legend>` grouping and a submit button, so pressing Enter anywhere in the form (not just clicking) gets a keyboard-only user their route.

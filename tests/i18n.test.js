@@ -13,6 +13,7 @@ describe("i18n coverage", () => {
     "transportTipShuttle", "transportTipWalkNow", "transportTipDeparture",
     "sustainabilityLabel", "sustainabilityTipG1", "sustainabilityTipG2",
     "sustainabilityTipG3", "sustainabilityTipG4", "sustainabilityTipG5",
+    "organizerSummaryTemplate",
   ];
 
   test("supports at least 5 languages", () => {

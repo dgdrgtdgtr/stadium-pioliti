@@ -12,6 +12,14 @@ export const GATES = [
   { id: "G5", name: "Gate 5 – VIP / Overflow",  stands: ["A","B","C","D","E","F","G","H"], wheelchair: true, baseWalk: 9 },
 ];
 
+const PRE_MATCH_RAMP_MINUTES = 60; // density ramps up steadily in this window before kickoff
+const POST_MATCH_SURGE_MINUTES = 20; // density spikes then decays in this window after full time
+const FAR_OUT_DECAY_RATE = 5; // minutes per density point once well outside the ramp window
+const FAR_OUT_MIN_DENSITY = 10; // density never drops below this floor long before kickoff
+const DEEP_POST_MATCH_BASELINE = 20; // baseline once the post-match surge has fully cleared
+const JITTER_RANGE = 15; // spread of the deterministic per-gate jitter
+const JITTER_CENTER_OFFSET = 7; // centers the jitter roughly around zero
+
 /**
  * Deterministic pseudo-random crowd density per gate based on a "time to kickoff"
  * value (minutes). Density rises sharply in the last 60 minutes before kickoff and
@@ -23,23 +31,28 @@ export const GATES = [
 export function crowdDensity(gateId, minutesToKickoff) {
   const seed = gateId.charCodeAt(1) || 1;
   let base;
-  if (minutesToKickoff <= -1 && minutesToKickoff >= -20) {
+  if (minutesToKickoff <= -1 && minutesToKickoff >= -POST_MATCH_SURGE_MINUTES) {
     base = 90 - Math.abs(minutesToKickoff) * 1.5; // post-match surge, decaying
-  } else if (minutesToKickoff >= 0 && minutesToKickoff <= 60) {
+  } else if (minutesToKickoff >= 0 && minutesToKickoff <= PRE_MATCH_RAMP_MINUTES) {
     base = 90 - minutesToKickoff; // pre-match ramp-up
-  } else if (minutesToKickoff > 60) {
-    base = Math.max(10, 30 - (minutesToKickoff - 60) / 5);
+  } else if (minutesToKickoff > PRE_MATCH_RAMP_MINUTES) {
+    base = Math.max(FAR_OUT_MIN_DENSITY, 30 - (minutesToKickoff - PRE_MATCH_RAMP_MINUTES) / FAR_OUT_DECAY_RATE);
   } else {
-    base = 20; // deep post-match, mostly cleared
+    base = DEEP_POST_MATCH_BASELINE; // deep post-match, mostly cleared
   }
-  const jitter = (seed * 7) % 15;
-  return Math.max(0, Math.min(100, Math.round(base + jitter - 7)));
+  const jitter = (seed * 7) % JITTER_RANGE;
+  return Math.max(0, Math.min(100, Math.round(base + jitter - JITTER_CENTER_OFFSET)));
 }
 
+const CRITICAL_THRESHOLD = 75;
+const HIGH_THRESHOLD = 50;
+const MODERATE_THRESHOLD = 25;
+
+/** @param {number} score 0-100 density @returns {'low'|'moderate'|'high'|'critical'} */
 export function densityLabel(score) {
-  if (score >= 75) return "critical";
-  if (score >= 50) return "high";
-  if (score >= 25) return "moderate";
+  if (score >= CRITICAL_THRESHOLD) return "critical";
+  if (score >= HIGH_THRESHOLD) return "high";
+  if (score >= MODERATE_THRESHOLD) return "moderate";
   return "low";
 }
 
@@ -105,7 +118,7 @@ export function recommendRoute(ctx) {
     .sort((a, b) => a.density - b.density);
 
   const primary = scored[0];
-  const overflowNeeded = primary.density >= 75;
+  const overflowNeeded = densityLabel(primary.density) === "critical";
 
   let alternate = null;
   if (overflowNeeded) {
@@ -120,7 +133,9 @@ export function recommendRoute(ctx) {
     : "Primary gate has acceptable density for your stand and access needs.";
   const reasonKey = overflowNeeded ? "reasonCritical" : "reasonOk";
 
-  const walkPenalty = Math.round((primary.density / 100) * 4); // congestion adds walk time
+const MAX_CONGESTION_WALK_PENALTY_MIN = 4; // extra minutes added at 100% density
+
+  const walkPenalty = Math.round((primary.density / 100) * MAX_CONGESTION_WALK_PENALTY_MIN);
   const estWalkMinutes = primary.gate.baseWalk + walkPenalty;
 
   return {
@@ -133,6 +148,24 @@ export function recommendRoute(ctx) {
     estWalkMinutes,
     transportKey: transportAdviceKey(minutesToKickoff),
     sustainabilityKey: sustainabilityTipKey(primary.gate.id),
+  };
+}
+
+/**
+ * Aggregate, venue-wide summary for organizers: a single glanceable rollup of
+ * gate health, rather than per-gate detail (which is what operationalAlerts() is for).
+ * @param {number} minutesToKickoff
+ * @returns {{averageDensity: number, criticalGateCount: number, totalGates: number, overallLabel: string}}
+ */
+export function organizerSummary(minutesToKickoff) {
+  const densities = GATES.map((g) => crowdDensity(g.id, minutesToKickoff));
+  const averageDensity = Math.round(densities.reduce((a, b) => a + b, 0) / densities.length);
+  const criticalGateCount = densities.filter((d) => densityLabel(d) === "critical").length;
+  return {
+    averageDensity,
+    criticalGateCount,
+    totalGates: GATES.length,
+    overallLabel: densityLabel(averageDensity),
   };
 }
 

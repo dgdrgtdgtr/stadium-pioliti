@@ -6,6 +6,7 @@ import {
   densityLabel,
   recommendRoute,
   operationalAlerts,
+  organizerSummary,
   transportAdviceKey,
   sustainabilityTipKey,
 } from "../js/engine.js";
@@ -112,6 +113,31 @@ describe("recommendRoute", () => {
     const result = recommendRoute({ stand: "C", wheelchairAccess: false, minutesToKickoff: 30 });
     assert.ok(result.transportKey.startsWith("transportTip"));
     assert.ok(result.sustainabilityKey.startsWith("sustainabilityTip"));
+  });
+});
+
+describe("organizerSummary", () => {
+  test("averageDensity is within 0-100 and matches manual average", () => {
+    const minutes = 10;
+    const summary = organizerSummary(minutes);
+    const manualAvg = Math.round(
+      GATES.map((g) => crowdDensity(g.id, minutes)).reduce((a, b) => a + b, 0) / GATES.length
+    );
+    assert.equal(summary.averageDensity, manualAvg);
+    assert.ok(summary.averageDensity >= 0 && summary.averageDensity <= 100);
+  });
+  test("criticalGateCount never exceeds totalGates", () => {
+    for (let m = -20; m <= 90; m += 10) {
+      const summary = organizerSummary(m);
+      assert.ok(summary.criticalGateCount <= summary.totalGates);
+    }
+  });
+  test("totalGates matches the GATES dataset length", () => {
+    assert.equal(organizerSummary(30).totalGates, GATES.length);
+  });
+  test("overallLabel is consistent with densityLabel of the average", () => {
+    const summary = organizerSummary(45);
+    assert.equal(summary.overallLabel, densityLabel(summary.averageDensity));
   });
 });
 
