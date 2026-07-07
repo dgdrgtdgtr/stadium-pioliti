@@ -43,6 +43,44 @@ export function densityLabel(score) {
   return "low";
 }
 
+const ACTION_KEY_BY_LABEL = {
+  critical: "actionCritical",
+  high: "actionHigh",
+  moderate: "actionModerate",
+  low: "actionLow",
+};
+
+/**
+ * Transportation guidance, translated via i18n key. Bucketed by how much time
+ * is left, since the best mode of arrival/departure changes as kickoff approaches.
+ * @param {number} minutesToKickoff
+ * @returns {string} i18n key
+ */
+export function transportAdviceKey(minutesToKickoff) {
+  if (minutesToKickoff < 0) return "transportTipDeparture";
+  if (minutesToKickoff > 45) return "transportTipEarly";
+  if (minutesToKickoff >= 15) return "transportTipShuttle";
+  return "transportTipWalkNow";
+}
+
+const SUSTAINABILITY_KEY_BY_GATE = {
+  G1: "sustainabilityTipG1",
+  G2: "sustainabilityTipG2",
+  G3: "sustainabilityTipG3",
+  G4: "sustainabilityTipG4",
+  G5: "sustainabilityTipG5",
+};
+
+/**
+ * Sustainability tip tied to the specific gate being recommended, so the advice
+ * is contextual (transit line, recycling point, etc.) rather than generic.
+ * @param {string} gateId
+ * @returns {string} i18n key
+ */
+export function sustainabilityTipKey(gateId) {
+  return SUSTAINABILITY_KEY_BY_GATE[gateId] || "sustainabilityTipG5";
+}
+
 /**
  * Core recommendation logic used by the fan-facing assistant.
  * @param {object} ctx
@@ -80,6 +118,7 @@ export function recommendRoute(ctx) {
   const reason = overflowNeeded
     ? "Primary gate is at critical density; overflow route suggested to reduce wait and crowding risk."
     : "Primary gate has acceptable density for your stand and access needs.";
+  const reasonKey = overflowNeeded ? "reasonCritical" : "reasonOk";
 
   const walkPenalty = Math.round((primary.density / 100) * 4); // congestion adds walk time
   const estWalkMinutes = primary.gate.baseWalk + walkPenalty;
@@ -90,7 +129,10 @@ export function recommendRoute(ctx) {
       ? { gate: alternate.gate, density: alternate.density, label: densityLabel(alternate.density) }
       : null,
     reason,
+    reasonKey,
     estWalkMinutes,
+    transportKey: transportAdviceKey(minutesToKickoff),
+    sustainabilityKey: sustainabilityTipKey(primary.gate.id),
   };
 }
 
@@ -107,6 +149,6 @@ export function operationalAlerts(minutesToKickoff) {
     if (label === "critical") action = "Deploy additional staff and open overflow gate (G5) immediately.";
     else if (label === "high") action = "Monitor closely; prepare overflow gate on standby.";
     else if (label === "moderate") action = "Routine monitoring; recheck in 10 minutes.";
-    return { gateId: g.id, gateName: g.name, density, label, action };
+    return { gateId: g.id, gateName: g.name, density, label, action, actionKey: ACTION_KEY_BY_LABEL[label] };
   }).sort((a, b) => b.density - a.density);
 }

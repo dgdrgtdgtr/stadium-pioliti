@@ -37,6 +37,8 @@ function applyStaticText() {
   $("#langLabelText").textContent = t(state.lang, "langLabel");
   $("#contrastLabelText").textContent = t(state.lang, "accessibilityToggle");
   $("#staffHeading").textContent = t(state.lang, "staffHeading");
+  $("#fanFormLegend").textContent = t(state.lang, "fanFormLegend");
+  $("#kickoffHint").textContent = t(state.lang, "kickoffHint");
 }
 
 function renderStandOptions() {
@@ -49,30 +51,30 @@ function renderStandOptions() {
   });
 }
 
+/** Builds a single gate card (primary or alternate); keeps both renders in one place. */
+function buildGateCard(titleKey, gateInfo, extraRows = []) {
+  return el("div", { class: `gate-card density-${gateInfo.label}` }, [
+    el("h3", {}, [t(state.lang, titleKey)]),
+    el("p", { class: "gate-name" }, [gateInfo.gate.name]),
+    el("p", {}, [`${t(state.lang, "density")}: ${gateInfo.density}/100 (${gateInfo.label})`]),
+    ...extraRows,
+  ]);
+}
+
 function renderRouteResult(result) {
   const out = $("#routeResult");
   out.innerHTML = "";
-  out.setAttribute("aria-live", "polite");
 
-  const primaryCard = el("div", { class: `gate-card density-${result.primary.label}` }, [
-    el("h3", {}, [t(state.lang, "primaryGate")]),
-    el("p", { class: "gate-name" }, [result.primary.gate.name]),
-    el("p", {}, [`${t(state.lang, "density")}: ${result.primary.density}/100 (${result.primary.label})`]),
-    el("p", {}, [`${t(state.lang, "walkTime")}: ${result.estWalkMinutes} ${t(state.lang, "minutes")}`]),
-  ]);
-  out.appendChild(primaryCard);
+  const walkRow = el("p", {}, [`${t(state.lang, "walkTime")}: ${result.estWalkMinutes} ${t(state.lang, "minutes")}`]);
+  out.appendChild(buildGateCard("primaryGate", result.primary, [walkRow]));
 
   if (result.alternate) {
-    const altCard = el("div", { class: `gate-card density-${result.alternate.label}` }, [
-      el("h3", {}, [t(state.lang, "alternateGate")]),
-      el("p", { class: "gate-name" }, [result.alternate.gate.name]),
-      el("p", {}, [`${t(state.lang, "density")}: ${result.alternate.density}/100 (${result.alternate.label})`]),
-    ]);
-    out.appendChild(altCard);
+    out.appendChild(buildGateCard("alternateGate", result.alternate));
   }
 
-  const reason = el("p", { class: "reason" }, [`${t(state.lang, "reasonLabel")}: ${result.reason}`]);
-  out.appendChild(reason);
+  out.appendChild(el("p", { class: "reason" }, [`${t(state.lang, "reasonLabel")}: ${t(state.lang, result.reasonKey)}`]));
+  out.appendChild(el("p", { class: "transport-tip" }, [`${t(state.lang, "transportLabel")}: ${t(state.lang, result.transportKey)}`]));
+  out.appendChild(el("p", { class: "sustainability-tip" }, [`${t(state.lang, "sustainabilityLabel")}: ${t(state.lang, result.sustainabilityKey)}`]));
 }
 
 function renderStaffAlerts() {
@@ -84,7 +86,7 @@ function renderStaffAlerts() {
     const item = el("li", { class: `alert-item density-${a.label}` }, [
       el("strong", {}, [a.gateName]),
       el("span", { class: "alert-density" }, [` — ${a.density}/100 (${a.label})`]),
-      el("p", {}, [a.action]),
+      el("p", {}, [t(state.lang, a.actionKey)]),
     ]);
     list.appendChild(item);
   });
@@ -94,9 +96,20 @@ function switchView(view) {
   state.view = view;
   $("#fanPanel").hidden = view !== "fan";
   $("#staffPanel").hidden = view !== "staff";
-  $("#fanTabBtn").setAttribute("aria-selected", String(view === "fan"));
-  $("#staffTabBtn").setAttribute("aria-selected", String(view === "staff"));
+  [$("#fanTabBtn"), $("#staffTabBtn")].forEach((btn) => {
+    const selected = btn.id === (view === "fan" ? "fanTabBtn" : "staffTabBtn");
+    btn.setAttribute("aria-selected", String(selected));
+    btn.tabIndex = selected ? 0 : -1;
+  });
   if (view === "staff") renderStaffAlerts();
+}
+
+/** Arrow-key navigation between tabs, per the WAI-ARIA tabs pattern. */
+function handleTabKeydown(e) {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const next = e.key === "ArrowRight" ? "staff" : "fan";
+  switchView(next);
+  $(next === "fan" ? "#fanTabBtn" : "#staffTabBtn").focus();
 }
 
 function handleGetRoute() {
@@ -119,6 +132,7 @@ function init() {
 
   $("#fanTabBtn").addEventListener("click", () => switchView("fan"));
   $("#staffTabBtn").addEventListener("click", () => switchView("staff"));
+  $(".tabs").addEventListener("keydown", handleTabKeydown);
   $("#getRouteBtn").addEventListener("click", handleGetRoute);
   $("#contrastToggle").addEventListener("click", toggleContrast);
   $("#kickoffInput").addEventListener("input", () => {
@@ -130,6 +144,8 @@ function init() {
   langSelect.addEventListener("change", (e) => {
     state.lang = e.target.value;
     applyStaticText();
+    if (state.view === "staff") renderStaffAlerts();
+    else if ($("#routeResult").children.length > 0) handleGetRoute();
   });
 
   if ("serviceWorker" in navigator) {

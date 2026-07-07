@@ -6,7 +6,7 @@ A GenAI-style decision-support assistant for fans, volunteers, and venue staff d
 
 ## Chosen Vertical
 
-Challenge 4 asks for a solution that improves **navigation, crowd management, accessibility, multilingual assistance, and operational intelligence** at a stadium. StadiumPilot addresses all five in a single lightweight app with two views:
+Challenge 4 asks for a solution that improves **navigation, crowd management, accessibility, transportation, sustainability, multilingual assistance, and operational intelligence** at a stadium. StadiumPilot addresses all seven in a single lightweight app with two views:
 
 - **Fan Assistant** — given a fan's seating stand, accessibility needs, and time relative to kickoff, recommends the best gate to use, an accessible alternate if the primary gate is overcrowded, and an estimated walk time — with a plain-language explanation of *why*.
 - **Volunteer / Staff View** — a live ranked list of every gate's crowd density with a concrete recommended operational action (e.g. "deploy additional staff and open overflow gate"), so staff can act on the same underlying model the fans see.
@@ -19,6 +19,9 @@ The core of the app is a **rule-based decision engine** (`js/engine.js`), delibe
 - **Crowd simulation**: `crowdDensity()` models realistic patterns — a ramp-up in the hour before kickoff, a sharp post-match surge that decays over ~20 minutes, and quieter periods otherwise — parameterized by minutes-to-kickoff so it's fully deterministic and testable.
 - **Routing logic**: `recommendRoute()` filters candidate gates by stand and accessibility requirement, picks the least-congested option, and only proposes an alternate route when the primary gate is at critical density (≥75/100).
 - **Operational alerts**: `operationalAlerts()` reuses the same density model to rank all gates for staff, turning the fan-facing logic into an ops dashboard with zero duplicated logic.
+- **Transportation guidance**: `transportAdviceKey()` recommends transit, shuttle, or walking based on time-to-kickoff — including a post-match departure tip to ease road congestion.
+- **Sustainability tips**: `sustainabilityTipKey()` attaches a gate-specific tip (transit line, recycling point, bike rack, carpool zone) to every route recommendation.
+- **Fully translated dynamic output**: unlike a chrome-only translation layer, the assistant's actual recommendation text (reason, transport tip, sustainability tip, staff action) is returned as an i18n key and translated per language — not just the static UI labels — across all 6 supported languages.
 
 ## How the Solution Works
 
@@ -45,7 +48,7 @@ Vanilla HTML/CSS/JS (ES modules), zero runtime dependencies, zero build step. No
 npm test
 ```
 
-24 unit tests cover the decision engine (gate data integrity, crowd density bounds/determinism, routing logic including accessibility and fallback behavior, operational alert generation) and the i18n layer (translation completeness across all 6 supported languages, fallback behavior).
+34 unit tests cover the decision engine (gate data integrity, crowd density bounds/determinism, routing logic including accessibility and fallback behavior, operational alert generation, transportation/sustainability key selection) and the i18n layer (translation completeness across all 6 supported languages including every dynamic-content key, a check that non-English languages aren't silently falling back to English text, and fallback behavior).
 
 ## Security Notes
 

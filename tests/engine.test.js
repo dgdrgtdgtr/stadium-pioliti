@@ -6,6 +6,8 @@ import {
   densityLabel,
   recommendRoute,
   operationalAlerts,
+  transportAdviceKey,
+  sustainabilityTipKey,
 } from "../js/engine.js";
 
 describe("GATES data integrity", () => {
@@ -100,6 +102,43 @@ describe("recommendRoute", () => {
     const result = recommendRoute({ stand: "B", wheelchairAccess: false, minutesToKickoff: 45 });
     assert.ok(result.reason.length > 0);
   });
+  test("reasonKey matches whether an alternate was needed", () => {
+    const critical = recommendRoute({ stand: "A", wheelchairAccess: false, minutesToKickoff: 5 });
+    if (critical.alternate) assert.equal(critical.reasonKey, "reasonCritical");
+    const calm = recommendRoute({ stand: "A", wheelchairAccess: false, minutesToKickoff: 200 });
+    assert.equal(calm.reasonKey, "reasonOk");
+  });
+  test("attaches a valid transportKey and sustainabilityKey", () => {
+    const result = recommendRoute({ stand: "C", wheelchairAccess: false, minutesToKickoff: 30 });
+    assert.ok(result.transportKey.startsWith("transportTip"));
+    assert.ok(result.sustainabilityKey.startsWith("sustainabilityTip"));
+  });
+});
+
+describe("transportAdviceKey", () => {
+  test("recommends early/transit guidance well before kickoff", () => {
+    assert.equal(transportAdviceKey(90), "transportTipEarly");
+  });
+  test("recommends shuttle guidance in the mid-range window", () => {
+    assert.equal(transportAdviceKey(30), "transportTipShuttle");
+  });
+  test("recommends walking directly when kickoff is imminent", () => {
+    assert.equal(transportAdviceKey(10), "transportTipWalkNow");
+  });
+  test("recommends departure guidance after the match", () => {
+    assert.equal(transportAdviceKey(-5), "transportTipDeparture");
+  });
+});
+
+describe("sustainabilityTipKey", () => {
+  test("returns a distinct, valid key for every gate", () => {
+    const keys = GATES.map((g) => sustainabilityTipKey(g.id));
+    assert.equal(new Set(keys).size, GATES.length);
+    keys.forEach((k) => assert.ok(k.startsWith("sustainabilityTip")));
+  });
+  test("falls back gracefully for an unknown gate id", () => {
+    assert.equal(sustainabilityTipKey("UNKNOWN"), "sustainabilityTipG5");
+  });
 });
 
 describe("operationalAlerts", () => {
@@ -125,5 +164,9 @@ describe("operationalAlerts", () => {
       assert.ok(a.gateName);
       assert.ok(a.action.length > 0);
     });
+  });
+  test("every alert has a valid, translatable actionKey", () => {
+    const validKeys = ["actionCritical", "actionHigh", "actionModerate", "actionLow"];
+    operationalAlerts(15).forEach((a) => assert.ok(validKeys.includes(a.actionKey)));
   });
 });
