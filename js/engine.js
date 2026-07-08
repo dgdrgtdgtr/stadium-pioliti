@@ -47,6 +47,7 @@ export function crowdDensity(gateId, minutesToKickoff) {
 const CRITICAL_THRESHOLD = 75;
 const HIGH_THRESHOLD = 50;
 const MODERATE_THRESHOLD = 25;
+const MAX_CONGESTION_WALK_PENALTY_MIN = 4; // extra minutes added at 100% density
 
 /** @param {number} score 0-100 density @returns {'low'|'moderate'|'high'|'critical'} */
 export function densityLabel(score) {
@@ -95,6 +96,19 @@ export function sustainabilityTipKey(gateId) {
 }
 
 /**
+ * Recomputes the effective "minutes to kickoff" as real time passes, so the staff
+ * dashboard can auto-refresh and show genuinely live-changing density/alerts
+ * instead of a static snapshot. Pure function of elapsed time, so it stays testable.
+ * @param {number} baseMinutesToKickoff - the value as of when the clock baseline was set
+ * @param {number} elapsedMs - milliseconds since that baseline was set
+ * @returns {number} updated minutes-to-kickoff
+ */
+export function effectiveMinutesToKickoff(baseMinutesToKickoff, elapsedMs) {
+  const elapsedMinutes = elapsedMs / 60000;
+  return baseMinutesToKickoff - elapsedMinutes;
+}
+
+/**
  * Core recommendation logic used by the fan-facing assistant.
  * @param {object} ctx
  * @param {string} ctx.stand - seating stand letter, e.g. "C"
@@ -132,8 +146,6 @@ export function recommendRoute(ctx) {
     ? "Primary gate is at critical density; overflow route suggested to reduce wait and crowding risk."
     : "Primary gate has acceptable density for your stand and access needs.";
   const reasonKey = overflowNeeded ? "reasonCritical" : "reasonOk";
-
-const MAX_CONGESTION_WALK_PENALTY_MIN = 4; // extra minutes added at 100% density
 
   const walkPenalty = Math.round((primary.density / 100) * MAX_CONGESTION_WALK_PENALTY_MIN);
   const estWalkMinutes = primary.gate.baseWalk + walkPenalty;

@@ -9,6 +9,7 @@ import {
   organizerSummary,
   transportAdviceKey,
   sustainabilityTipKey,
+  effectiveMinutesToKickoff,
 } from "../js/engine.js";
 
 describe("GATES data integrity", () => {
@@ -194,5 +195,21 @@ describe("operationalAlerts", () => {
   test("every alert has a valid, translatable actionKey", () => {
     const validKeys = ["actionCritical", "actionHigh", "actionModerate", "actionLow"];
     operationalAlerts(15).forEach((a) => assert.ok(validKeys.includes(a.actionKey)));
+  });
+});
+
+describe("effectiveMinutesToKickoff", () => {
+  test("returns the base value unchanged when no time has elapsed", () => {
+    assert.equal(effectiveMinutesToKickoff(30, 0), 30);
+  });
+  test("counts down by exactly one minute per 60000ms elapsed", () => {
+    assert.equal(effectiveMinutesToKickoff(30, 60000), 29);
+    assert.equal(effectiveMinutesToKickoff(30, 5 * 60000), 25);
+  });
+  test("can go negative, representing time after kickoff", () => {
+    assert.equal(effectiveMinutesToKickoff(2, 5 * 60000), -3);
+  });
+  test("is a pure function — same inputs always produce the same output", () => {
+    assert.equal(effectiveMinutesToKickoff(10, 15000), effectiveMinutesToKickoff(10, 15000));
   });
 });

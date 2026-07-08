@@ -7,7 +7,7 @@ describe("i18n coverage", () => {
     "title", "tagline", "fanTab", "staffTab", "standLabel", "wheelchairLabel",
     "kickoffLabel", "getRoute", "primaryGate", "alternateGate", "walkTime",
     "minutes", "density", "reasonLabel", "staffHeading", "noAlerts",
-    "langLabel", "accessibilityToggle", "fanFormLegend", "kickoffHint",
+    "langLabel", "accessibilityToggle", "fanFormLegend", "kickoffHint", "lastUpdatedPrefix",
     "reasonCritical", "reasonOk", "actionCritical", "actionHigh",
     "actionModerate", "actionLow", "transportLabel", "transportTipEarly",
     "transportTipShuttle", "transportTipWalkNow", "transportTipDeparture",

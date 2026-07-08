@@ -19,6 +19,7 @@ The core of the app is a **rule-based decision engine** (`js/engine.js`), delibe
 - **Crowd simulation**: `crowdDensity()` models realistic patterns — a ramp-up in the hour before kickoff, a sharp post-match surge that decays over ~20 minutes, and quieter periods otherwise — parameterized by minutes-to-kickoff so it's fully deterministic and testable.
 - **Routing logic**: `recommendRoute()` filters candidate gates by stand and accessibility requirement, picks the least-congested option, and only proposes an alternate route when the primary gate is at critical density (≥75/100).
 - **Operational alerts**: `operationalAlerts()` reuses the same density model to rank all gates for staff, turning the fan-facing logic into an ops dashboard with zero duplicated logic.
+- **Live-updating staff dashboard**: while the staff view is open, `effectiveMinutesToKickoff()` recomputes the countdown from real elapsed time and the dashboard auto-refreshes every 20s (interval is started on entering the view and cleared on leaving, so it never leaks). The "Updated HH:MM:SS" timestamp is genuinely live, not a static label — this is what makes the "real-time decision support" requirement actually real rather than just a claim.
 - **Transportation guidance**: `transportAdviceKey()` recommends transit, shuttle, or walking based on time-to-kickoff — including a post-match departure tip to ease road congestion.
 - **Sustainability tips**: `sustainabilityTipKey()` attaches a gate-specific tip (transit line, recycling point, bike rack, carpool zone) to every route recommendation.
 - **Fully translated dynamic output**: unlike a chrome-only translation layer, the assistant's actual recommendation text (reason, transport tip, sustainability tip, staff action) is returned as an i18n key and translated per language — not just the static UI labels — across all 6 supported languages.
@@ -48,7 +49,7 @@ Vanilla HTML/CSS/JS (ES modules), zero runtime dependencies, zero build step. No
 npm test
 ```
 
-38 unit tests cover the decision engine (gate data integrity, crowd density bounds/determinism, routing logic including accessibility and fallback behavior, operational alert generation, transportation/sustainability key selection, organizer summary aggregation) and the i18n layer (translation completeness across all 6 supported languages including every dynamic-content key, a check that non-English languages aren't silently falling back to English text, and fallback behavior).
+42 unit tests cover the decision engine (gate data integrity, crowd density bounds/determinism, routing logic including accessibility and fallback behavior, operational alert generation, transportation/sustainability key selection, organizer summary aggregation, the live-clock countdown function) and the i18n layer (translation completeness across all 6 supported languages including every dynamic-content key, a check that non-English languages aren't silently falling back to English text, and fallback behavior).
 
 ## Security Notes
 

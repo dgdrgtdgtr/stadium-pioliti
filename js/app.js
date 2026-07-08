@@ -1,11 +1,21 @@
-import { GATES, recommendRoute, operationalAlerts, organizerSummary, densityLabel } from "./engine.js";
+import {
+  GATES,
+  recommendRoute,
+  operationalAlerts,
+  organizerSummary,
+  effectiveMinutesToKickoff,
+} from "./engine.js";
 import { LANGS, t } from "./i18n.js";
 
 const state = {
   lang: "en",
   view: "fan", // "fan" | "staff"
   highContrast: false,
+  refreshIntervalId: null,
+  staffClockStartedAt: null, // Date.now() timestamp; baseline for the live countdown
 };
+
+const STAFF_REFRESH_MS = 20000;
 
 function $(sel, root = document) {
   return root.querySelector(sel);
@@ -19,6 +29,12 @@ function el(tag, props = {}, children = []) {
   });
   children.forEach((c) => node.appendChild(typeof c === "string" ? document.createTextNode(c) : c));
   return node;
+}
+
+/** Single source of truth for reading + defaulting the kickoff-minutes input. */
+function getKickoffInputValue() {
+  const raw = Number($("#kickoffInput").value);
+  return Number.isNaN(raw) ? 0 : raw;
 }
 
 function applyStaticText() {
@@ -78,7 +94,10 @@ function renderRouteResult(result) {
 }
 
 function renderStaffAlerts() {
-  const kickoff = Number($("#kickoffInput").value) || 0;
+  const baseKickoff = getKickoffInputValue();
+  const elapsedMs = state.staffClockStartedAt === null ? 0 : Date.now() - state.staffClockStartedAt;
+  const kickoff = effectiveMinutesToKickoff(baseKickoff, elapsedMs);
+
   const summary = organizerSummary(kickoff);
   const summaryEl = $("#organizerSummary");
   summaryEl.textContent = t(state.lang, "organizerSummaryTemplate")
@@ -98,6 +117,9 @@ function renderStaffAlerts() {
     ]);
     list.appendChild(item);
   });
+
+  const timeStr = new Date().toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  $("#staffLastUpdated").textContent = `${t(state.lang, "lastUpdatedPrefix")} ${timeStr}`;
 }
 
 function switchView(view) {
@@ -109,7 +131,17 @@ function switchView(view) {
     btn.setAttribute("aria-selected", String(selected));
     btn.tabIndex = selected ? 0 : -1;
   });
-  if (view === "staff") renderStaffAlerts();
+
+  if (state.refreshIntervalId !== null) {
+    clearInterval(state.refreshIntervalId);
+    state.refreshIntervalId = null;
+  }
+
+  if (view === "staff") {
+    state.staffClockStartedAt = Date.now();
+    renderStaffAlerts();
+    state.refreshIntervalId = setInterval(renderStaffAlerts, STAFF_REFRESH_MS);
+  }
 }
 
 /** Arrow-key navigation between tabs, per the WAI-ARIA tabs pattern. */
@@ -124,7 +156,7 @@ function handleGetRoute(e) {
   if (e) e.preventDefault();
   const stand = $("#standSelect").value;
   const wheelchairAccess = $("#wheelchairCheck").checked;
-  const minutesToKickoff = Number($("#kickoffInput").value) || 0;
+  const minutesToKickoff = getKickoffInputValue();
   const result = recommendRoute({ stand, wheelchairAccess, minutesToKickoff });
   renderRouteResult(result);
 }
@@ -145,7 +177,10 @@ function init() {
   $("#fanForm").addEventListener("submit", handleGetRoute);
   $("#contrastToggle").addEventListener("click", toggleContrast);
   $("#kickoffInput").addEventListener("input", () => {
-    if (state.view === "staff") renderStaffAlerts();
+    if (state.view === "staff") {
+      state.staffClockStartedAt = Date.now();
+      renderStaffAlerts();
+    }
   });
 
   const langSelect = $("#langSelect");
