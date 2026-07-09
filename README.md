@@ -6,7 +6,7 @@ A GenAI-style decision-support assistant for fans, volunteers, and venue staff d
 
 ## Chosen Vertical
 
-Challenge 4 asks for a solution that improves **navigation, crowd management, accessibility, transportation, sustainability, multilingual assistance, and operational intelligence** at a stadium. StadiumPilot addresses all seven in a single lightweight app with two views:
+Challenge 4 asks for a solution that improves **navigation, crowd management, accessibility, transportation, sustainability, multilingual assistance, operational intelligence, and real-time decision support** at a stadium. StadiumPilot addresses all eight in a single lightweight app with two views:
 
 - **Fan Assistant** — given a fan's seating stand, accessibility needs, and time relative to kickoff, recommends the best gate to use, an accessible alternate if the primary gate is overcrowded, an estimated walk time, a transportation tip, and a sustainability tip — with a plain-language explanation of *why*.
 - **Volunteer / Staff / Organizer View** — a venue-wide organizer summary (average density, count of gates at critical level) sits above a live ranked list of every gate's crowd density with a concrete recommended operational action, so organizers get the 10,000-foot view and staff get the per-gate detail from the same underlying model.
@@ -28,7 +28,7 @@ The core of the app is a **rule-based decision engine** (`js/engine.js`), delibe
 
 1. Open `index.html` (or the deployed GitHub Pages link).
 2. **Fan Assistant tab**: pick your stand, toggle wheelchair-accessible routing if needed, set minutes to kickoff, and tap "Get my route." The assistant explains its recommendation and offers an alternate if crowding is high.
-3. **Volunteer/Staff tab**: see all gates ranked by live density with a recommended action per gate.
+3. **Volunteer/Staff tab**: see all gates ranked by live density with a recommended action per gate. A "Refresh now" button forces an immediate update without waiting for the 20s auto-refresh cycle.
 4. Switch language via the dropdown (English, Spanish, French, Arabic, Portuguese, Hindi) — the UI, including `dir="rtl"` for Arabic, updates instantly.
 5. Toggle high-contrast mode for low-vision accessibility.
 6. The app registers a Service Worker so the core experience keeps working with intermittent stadium Wi-Fi.

@@ -53,6 +53,7 @@ function applyStaticText() {
   $("#langLabelText").textContent = t(state.lang, "langLabel");
   $("#contrastLabelText").textContent = t(state.lang, "accessibilityToggle");
   $("#staffHeading").textContent = t(state.lang, "staffHeading");
+  $("#staffRefreshBtn").textContent = t(state.lang, "refreshNow");
   $("#fanFormLegend").textContent = t(state.lang, "fanFormLegend");
   $("#kickoffHint").textContent = t(state.lang, "kickoffHint");
 }
@@ -174,6 +175,7 @@ function init() {
   $("#fanTabBtn").addEventListener("click", () => switchView("fan"));
   $("#staffTabBtn").addEventListener("click", () => switchView("staff"));
   $(".tabs").addEventListener("keydown", handleTabKeydown);
+  $("#staffRefreshBtn").addEventListener("click", renderStaffAlerts);
   $("#fanForm").addEventListener("submit", handleGetRoute);
   $("#contrastToggle").addEventListener("click", toggleContrast);
   $("#kickoffInput").addEventListener("input", () => {

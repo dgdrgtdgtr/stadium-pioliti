@@ -86,6 +86,7 @@ legend { padding: 0; font-size: 0.875rem; color: var(--muted); margin-bottom: va
 .field { margin-bottom: var(--space-3); display: flex; flex-direction: column; gap: var(--space-1); }
 .field label { color: var(--muted); font-size: 0.875rem; }
 .field-hint { font-size: 0.75rem; color: var(--muted); }
+.staff-last-updated { font-size: 0.8rem; color: var(--muted); display: inline-block; margin-bottom: var(--space-2); }
 .transport-tip, .sustainability-tip { font-size: 0.875rem; color: var(--muted); margin-top: var(--space-1); }
 .organizer-summary { font-weight: 600; padding: var(--space-2); border-left: 4px solid var(--muted); margin-bottom: var(--space-3); }
 .organizer-summary.density-low { border-left-color: var(--low); }
@@ -115,6 +116,24 @@ select, input[type="number"] {
   margin-top: var(--space-2);
 }
 .primary-btn:hover { filter: brightness(1.08); }
+.staff-refresh-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.secondary-btn {
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  border: 1px solid var(--muted);
+  border-radius: 10px;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.secondary-btn:hover { background: var(--surface-2); }
 .primary-btn:focus-visible, select:focus-visible, input:focus-visible, button:focus-visible {
   outline: 3px solid var(--accent-2);
   outline-offset: 2px;
